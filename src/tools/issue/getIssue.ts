@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ToolDefinition } from '../../types/tool.js';
 import { TranslationHelper } from '../../createTranslationHelper.js';
 import { JiraClient } from '../../jira/client.js';
+import { mapIssue } from './mapIssue.js';
 
 const getIssueSchema = z.object({
   issueKey: z.string().describe('Issue key or ID (e.g. "PROJ-123" or "10001")'),
@@ -37,10 +38,11 @@ export function getIssueTool(
       if (input.fields) params.fields = input.fields;
       if (input.expand) params.expand = input.expand;
 
-      return client.get(
+      const raw = await client.get(
         `${client.apiBasePath}/issue/${input.issueKey}`,
         params
       );
+      return mapIssue(raw, client.apiVersion);
     },
   };
 }

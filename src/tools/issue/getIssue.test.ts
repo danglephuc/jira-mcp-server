@@ -22,15 +22,22 @@ const mockIssue = {
     assignee: { displayName: 'Alice', emailAddress: 'alice@example.com' },
     priority: { name: 'High' },
     issuetype: { name: 'Bug' },
+    reporter: { displayName: 'Bob' },
+    creator: null,
     created: '2025-01-01T00:00:00.000+0000',
     updated: '2025-01-02T00:00:00.000+0000',
+    labels: [],
+    components: [],
+    fixVersions: [],
+    subtasks: [],
   },
 };
 
 describe('getIssueTool', () => {
   const mockClient = {
     get: vi.fn<() => Promise<unknown>>().mockResolvedValue(mockIssue),
-    apiBasePath: '/rest/api/2',
+    apiBasePath: '/rest/api/3',
+    apiVersion: '3',
   } as unknown as JiraClient;
 
   const tool = getIssueTool(mockClient, createTranslationHelper());
@@ -46,37 +53,37 @@ describe('getIssueTool', () => {
     expect(tool.description.length).toBeGreaterThan(0);
   });
 
-  it('returns the issue data from the client', async () => {
-    const result = await tool.handler({ issueKey: 'PROJ-1' });
+  it('returns a mapped issue (not raw Jira JSON)', async () => {
+    const result = (await tool.handler({ issueKey: 'PROJ-1' })) as Record<
+      string,
+      unknown
+    >;
 
-    expect(result).toEqual(mockIssue);
+    expect(result.key).toBe('PROJ-1');
+    expect(result.summary).toBe('Sample issue subject');
+    expect(result.status).toBe('Open');
+    expect(result.description).toBe('Sample issue description');
+    // Noise fields must not be present.
+    expect('self' in result).toBe(false);
+    expect('expand' in result).toBe(false);
   });
 
   it('calls client.get with the correct URL for a given issue key', async () => {
     await tool.handler({ issueKey: 'PROJ-1' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issue/PROJ-1', {});
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issue/PROJ-1', {});
   });
 
   it('calls client.get with a numeric issue ID', async () => {
     await tool.handler({ issueKey: '10001' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issue/10001', {});
-  });
-
-  it('uses /rest/api/2 path by default (Server/DC compatibility)', async () => {
-    await tool.handler({ issueKey: 'SFITLOCAL-1476' });
-
-    expect(mockClient.get).toHaveBeenCalledWith(
-      '/rest/api/2/issue/SFITLOCAL-1476',
-      {}
-    );
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issue/10001', {});
   });
 
   it('passes the fields param when provided', async () => {
     await tool.handler({ issueKey: 'PROJ-1', fields: 'summary,status' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issue/PROJ-1', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issue/PROJ-1', {
       fields: 'summary,status',
     });
   });
@@ -87,7 +94,7 @@ describe('getIssueTool', () => {
       expand: 'renderedFields,changelog',
     });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issue/PROJ-1', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issue/PROJ-1', {
       expand: 'renderedFields,changelog',
     });
   });
@@ -95,6 +102,6 @@ describe('getIssueTool', () => {
   it('omits optional params when not provided', async () => {
     await tool.handler({ issueKey: 'PROJ-1' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issue/PROJ-1', {});
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issue/PROJ-1', {});
   });
 });

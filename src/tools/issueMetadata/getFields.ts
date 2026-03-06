@@ -17,7 +17,19 @@ export function getFieldsTool(
     ),
     schema: getFieldsSchema as unknown as z.ZodObject<z.ZodRawShape>,
     handler: async () => {
-      return client.get(`${client.apiBasePath}/field`);
+      const raw = await client.get<unknown>(`${client.apiBasePath}/field`);
+      if (!Array.isArray(raw)) return [];
+      return (raw as Record<string, unknown>[]).map((f) => ({
+        id: f.id,
+        name: f.name,
+        custom: f.custom,
+        schema: f.schema
+          ? {
+              type: (f.schema as Record<string, unknown>).type,
+              system: (f.schema as Record<string, unknown>).system,
+            }
+          : undefined,
+      }));
     },
   };
 }

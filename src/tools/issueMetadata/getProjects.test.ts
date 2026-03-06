@@ -46,10 +46,29 @@ describe('getProjectsTool', () => {
     expect(tool.description.length).toBeGreaterThan(0);
   });
 
-  it('returns the list of projects from the client', async () => {
-    const result = await tool.handler({});
+  it('returns mapped projects (noise fields stripped)', async () => {
+    const result = (await tool.handler({})) as Record<string, unknown>;
 
-    expect(result).toEqual(mockProjects);
+    expect(result).toEqual({
+      startAt: 0,
+      maxResults: 50,
+      total: 2,
+      isLast: true,
+      projects: [
+        {
+          id: '10000',
+          key: 'PROJ',
+          name: 'Project Alpha',
+          projectTypeKey: 'software',
+        },
+        {
+          id: '10001',
+          key: 'BETA',
+          name: 'Project Beta',
+          projectTypeKey: 'software',
+        },
+      ],
+    });
   });
 
   it('calls client.get with no params when called with empty input', async () => {

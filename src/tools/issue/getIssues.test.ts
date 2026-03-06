@@ -14,11 +14,18 @@ const mockIssueList = {
       key: 'PROJ-1',
       fields: {
         summary: 'Issue One',
-        status: { name: 'Open' },
+        status: { name: 'Open', statusCategory: { name: 'To Do' } },
         assignee: { displayName: 'Alice' },
         priority: { name: 'High' },
+        issuetype: { name: 'Bug' },
+        reporter: null,
+        creator: null,
         created: '2025-01-01T00:00:00.000+0000',
         updated: '2025-01-01T00:00:00.000+0000',
+        labels: [],
+        components: [],
+        fixVersions: [],
+        subtasks: [],
       },
     },
     {
@@ -26,11 +33,21 @@ const mockIssueList = {
       key: 'PROJ-2',
       fields: {
         summary: 'Issue Two',
-        status: { name: 'In Progress' },
+        status: {
+          name: 'In Progress',
+          statusCategory: { name: 'In Progress' },
+        },
         assignee: { displayName: 'Bob' },
         priority: { name: 'Normal' },
+        issuetype: { name: 'Task' },
+        reporter: null,
+        creator: null,
         created: '2025-01-02T00:00:00.000+0000',
         updated: '2025-01-03T00:00:00.000+0000',
+        labels: [],
+        components: [],
+        fixVersions: [],
+        subtasks: [],
       },
     },
   ],
@@ -58,10 +75,18 @@ describe('getIssuesTool', () => {
     expect(tool.description.length).toBeGreaterThan(0);
   });
 
-  it('returns the list of issues from the client', async () => {
-    const result = await tool.handler({});
+  it('returns a mapped search result (not raw Jira JSON)', async () => {
+    const result = (await tool.handler({})) as Record<string, unknown>;
 
-    expect(result).toEqual(mockIssueList);
+    expect(result.startAt).toBe(0);
+    expect(result.maxResults).toBe(50);
+    expect(result.total).toBe(2);
+    expect(Array.isArray(result.issues)).toBe(true);
+    const issues = result.issues as Record<string, unknown>[];
+    expect(issues[0].key).toBe('PROJ-1');
+    expect(issues[0].status).toBe('Open');
+    // Noise fields must not be present at the wrapper level.
+    expect('expand' in result).toBe(false);
   });
 
   it('calls client.get with /search for API v2 (Server/DC)', async () => {

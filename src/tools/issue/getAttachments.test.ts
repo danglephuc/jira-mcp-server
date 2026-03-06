@@ -51,10 +51,30 @@ describe('getAttachmentsTool', () => {
     expect(tool.description.length).toBeGreaterThan(0);
   });
 
-  it('returns the attachments from the issue', async () => {
-    const result = await tool.handler({ issueKey: 'PROJ-1' });
+  it('returns mapped attachments (noise fields stripped)', async () => {
+    const result = (await tool.handler({ issueKey: 'PROJ-1' })) as Record<
+      string,
+      unknown
+    >[];
 
-    expect(result).toEqual(mockAttachments);
+    expect(result).toEqual([
+      {
+        id: '10010',
+        filename: 'screenshot.png',
+        mimeType: 'image/png',
+        size: 102400,
+        created: '2025-03-01T10:00:00.000+0000',
+        author: { displayName: 'Alice' },
+      },
+      {
+        id: '10011',
+        filename: 'report.pdf',
+        mimeType: 'application/pdf',
+        size: 204800,
+        created: '2025-03-02T14:30:00.000+0000',
+        author: { displayName: 'Bob' },
+      },
+    ]);
   });
 
   it('calls client.get with the correct URL and fields param', async () => {

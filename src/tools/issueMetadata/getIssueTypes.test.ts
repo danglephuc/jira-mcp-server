@@ -42,10 +42,32 @@ describe('getIssueTypesTool', () => {
     expect(tool.description.length).toBeGreaterThan(0);
   });
 
-  it('returns the list of issue types from the client', async () => {
-    const result = await tool.handler({});
+  it('returns mapped issue types (noise fields stripped)', async () => {
+    const result = (await tool.handler({})) as Record<string, unknown>[];
 
-    expect(result).toEqual(mockIssueTypes);
+    expect(result).toEqual([
+      {
+        id: '1',
+        name: 'Bug',
+        description: undefined,
+        subtask: undefined,
+        hierarchyLevel: undefined,
+      },
+      {
+        id: '2',
+        name: 'Story',
+        description: undefined,
+        subtask: undefined,
+        hierarchyLevel: undefined,
+      },
+      {
+        id: '3',
+        name: 'Task',
+        description: undefined,
+        subtask: undefined,
+        hierarchyLevel: undefined,
+      },
+    ]);
   });
 
   it('calls the global issue types endpoint when no projectId is given', async () => {

@@ -55,7 +55,29 @@ export function getProjectsTool(
       if (input.orderBy !== undefined) params.orderBy = input.orderBy;
       if (input.expand !== undefined) params.expand = input.expand;
 
-      return client.get(`${client.apiBasePath}/project/search`, params);
+      const raw = await client.get<Record<string, unknown>>(
+        `${client.apiBasePath}/project/search`,
+        params
+      );
+      const values = Array.isArray(raw.values) ? raw.values : [];
+      return {
+        startAt: raw.startAt ?? 0,
+        maxResults: raw.maxResults ?? 0,
+        total: raw.total ?? 0,
+        isLast: raw.isLast ?? true,
+        projects: values.map((p: Record<string, unknown>) => {
+          const lead = p.lead as Record<string, unknown> | undefined;
+          return {
+            id: p.id,
+            key: p.key,
+            name: p.name,
+            projectTypeKey: p.projectTypeKey,
+            style: p.style,
+            isPrivate: p.isPrivate,
+            ...(lead ? { lead: { displayName: lead.displayName } } : {}),
+          };
+        }),
+      };
     },
   };
 }

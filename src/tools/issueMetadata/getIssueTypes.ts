@@ -26,12 +26,20 @@ export function getIssueTypesTool(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handler: async (rawInput: any) => {
       const input = rawInput as z.infer<typeof getIssueTypesSchema>;
-      if (input.projectId) {
-        return client.get(
-          `${client.apiBasePath}/issuetype/project?projectId=${encodeURIComponent(input.projectId)}`
-        );
-      }
-      return client.get(`${client.apiBasePath}/issuetype`);
+      const raw = input.projectId
+        ? await client.get<unknown>(
+            `${client.apiBasePath}/issuetype/project?projectId=${encodeURIComponent(input.projectId)}`
+          )
+        : await client.get<unknown>(`${client.apiBasePath}/issuetype`);
+
+      if (!Array.isArray(raw)) return [];
+      return (raw as Record<string, unknown>[]).map((t) => ({
+        id: t.id,
+        name: t.name,
+        description: t.description,
+        subtask: t.subtask,
+        hierarchyLevel: t.hierarchyLevel,
+      }));
     },
   };
 }
