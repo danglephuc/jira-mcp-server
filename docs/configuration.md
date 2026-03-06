@@ -6,18 +6,18 @@ This document describes all configuration options for the Jira MCP Server.
 
 ## Environment Variables
 
-| Variable           | Required  | Description                                                                                                       |
-| ------------------ | --------- | ----------------------------------------------------------------------------------------------------------------- |
-| `JIRA_URL`         | ✅ Yes    | Base URL of your Jira instance (e.g. `https://your-domain.atlassian.net`)                                         |
-| `JIRA_EMAIL`       | ✅ Cloud  | Email address for Jira Cloud authentication                                                                       |
-| `JIRA_API_TOKEN`   | ✅ Cloud  | API token for Jira Cloud (generate at https://id.atlassian.com/manage-profile/security/api-tokens)                |
-| `JIRA_USERNAME`    | ✅ Server | Username for Jira Server / Data Center                                                                            |
-| `JIRA_PASSWORD`    | ✅ Server | Password for Jira Server / Data Center                                                                            |
-| `MAX_TOKENS`       | No        | Maximum number of tokens in a response before truncation (default: `50000`)                                       |
-| `PREFIX`           | No        | String prefix for all tool names (e.g. `jira_` → `jira_get_issues`)                                               |
-| `ENABLE_TOOLSETS`  | No        | Comma-separated list of toolsets to enable (default: `all`)                                                       |
-| `JIRA_API_VERSION` | No        | Jira REST API version (`2` or `3`). Default: `2`. Use `2` for Server/DC; use `3` for Jira Cloud ADF descriptions. |
-| `LOG_LEVEL`        | No        | Pino log level: `trace`, `debug`, `info`, `warn`, `error` (default: `info`)                                       |
+| Variable           | Required  | Description                                                                                                                                                                        |
+| ------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JIRA_URL`         | ✅ Yes    | Base URL of your Jira instance (e.g. `https://your-domain.atlassian.net`)                                                                                                          |
+| `JIRA_EMAIL`       | ✅ Cloud  | Email address for Jira Cloud authentication                                                                                                                                        |
+| `JIRA_API_TOKEN`   | ✅ Cloud  | API token for Jira Cloud (generate at https://id.atlassian.com/manage-profile/security/api-tokens)                                                                                 |
+| `JIRA_USERNAME`    | ✅ Server | Username for Jira Server / Data Center                                                                                                                                             |
+| `JIRA_PASSWORD`    | ✅ Server | Password for Jira Server / Data Center                                                                                                                                             |
+| `MAX_TOKENS`       | No        | Maximum number of tokens in a response before truncation (default: `50000`)                                                                                                        |
+| `PREFIX`           | No        | String prefix for all tool names (e.g. `jira_` → `jira_get_issues`)                                                                                                                |
+| `ENABLE_TOOLSETS`  | No        | Comma-separated list of toolsets to enable (default: `all`)                                                                                                                        |
+| `JIRA_API_VERSION` | No        | Jira REST API version (`2` or `3`). Auto-detected from credentials: Cloud (email+token) defaults to `3`; Server/DC (username+password) defaults to `2`. Override only when needed. |
+| `LOG_LEVEL`        | No        | Pino log level: `trace`, `debug`, `info`, `warn`, `error` (default: `info`)                                                                                                        |
 
 ---
 

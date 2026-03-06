@@ -33,9 +33,6 @@ export class JiraClient {
       .asString()
       .replace(/\/+$/, '');
 
-    const apiVersion = env.get('JIRA_API_VERSION').default('2').asString();
-    this.apiBasePath = `/rest/api/${apiVersion}`;
-
     const email = env.get('JIRA_EMAIL').asString();
     const apiToken = env.get('JIRA_API_TOKEN').asString();
     const username = env.get('JIRA_USERNAME').asString();
@@ -54,6 +51,17 @@ export class JiraClient {
         'Jira authentication is not configured. Set JIRA_EMAIL and JIRA_API_TOKEN (Cloud), or JIRA_USERNAME and JIRA_PASSWORD (Server/DC).'
       );
     }
+
+    // At this point authentication was successfully determined.
+    // Jira Cloud (email+token) requires API v3: some v2 endpoints were permanently
+    // removed (HTTP 410). Jira Server/DC only has v2 (v3 returns 404).
+    // JIRA_API_VERSION always overrides the auto-detected default.
+    const defaultApiVersion = email && apiToken ? '3' : '2';
+    const apiVersion = env
+      .get('JIRA_API_VERSION')
+      .default(defaultApiVersion)
+      .asString();
+    this.apiBasePath = `/rest/api/${apiVersion}`;
   }
 
   async get<T>(

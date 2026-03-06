@@ -100,19 +100,39 @@ describe('JiraClient', () => {
       vi.stubGlobal('fetch', mockFetch);
 
       const client = new JiraClient();
-      client.get('/rest/api/2/search');
+      client.get(`${client.apiBasePath}/search`);
 
       const calledUrl: string = mockFetch.mock.calls[0][0];
       expect(calledUrl).not.toContain('//rest');
     });
 
-    it('defaults apiBasePath to /rest/api/2 when JIRA_API_VERSION is not set', () => {
+    it('defaults apiBasePath to /rest/api/3 for Cloud credentials (email+token)', () => {
       delete process.env.JIRA_API_VERSION;
+      const client = new JiraClient();
+      expect(client.apiBasePath).toBe('/rest/api/3');
+    });
+
+    it('defaults apiBasePath to /rest/api/2 for Server/DC credentials (username+password)', () => {
+      delete process.env.JIRA_EMAIL;
+      delete process.env.JIRA_API_TOKEN;
+      delete process.env.JIRA_API_VERSION;
+      process.env.JIRA_USERNAME = 'user';
+      process.env.JIRA_PASSWORD = 'pass';
       const client = new JiraClient();
       expect(client.apiBasePath).toBe('/rest/api/2');
     });
 
-    it('uses /rest/api/3 when JIRA_API_VERSION=3', () => {
+    it('JIRA_API_VERSION=2 overrides Cloud default of 3', () => {
+      process.env.JIRA_API_VERSION = '2';
+      const client = new JiraClient();
+      expect(client.apiBasePath).toBe('/rest/api/2');
+    });
+
+    it('JIRA_API_VERSION=3 overrides Server/DC default of 2', () => {
+      delete process.env.JIRA_EMAIL;
+      delete process.env.JIRA_API_TOKEN;
+      process.env.JIRA_USERNAME = 'user';
+      process.env.JIRA_PASSWORD = 'pass';
       process.env.JIRA_API_VERSION = '3';
       const client = new JiraClient();
       expect(client.apiBasePath).toBe('/rest/api/3');
@@ -191,7 +211,22 @@ describe('JiraClient', () => {
       expect(calledUrl).toContain('maxResults=10');
     });
 
-    it('includes /rest/api/2 in the request URL by default', async () => {
+    it('includes /rest/api/3 in the request URL by default for Cloud credentials', async () => {
+      const mockFetch = makeFetchMock(200, {});
+      vi.stubGlobal('fetch', mockFetch);
+
+      const client = new JiraClient();
+      await client.get(`${client.apiBasePath}/issue/CLOUD-123`);
+
+      const calledUrl: string = mockFetch.mock.calls[0][0];
+      expect(calledUrl).toContain('/rest/api/3/issue/CLOUD-123');
+    });
+
+    it('includes /rest/api/2 in the request URL by default for Server/DC credentials', async () => {
+      delete process.env.JIRA_EMAIL;
+      delete process.env.JIRA_API_TOKEN;
+      process.env.JIRA_USERNAME = 'user';
+      process.env.JIRA_PASSWORD = 'pass';
       const mockFetch = makeFetchMock(200, {});
       vi.stubGlobal('fetch', mockFetch);
 
@@ -200,18 +235,6 @@ describe('JiraClient', () => {
 
       const calledUrl: string = mockFetch.mock.calls[0][0];
       expect(calledUrl).toContain('/rest/api/2/issue/SFITLOCAL-1476');
-    });
-
-    it('includes /rest/api/3 in the request URL when JIRA_API_VERSION=3', async () => {
-      process.env.JIRA_API_VERSION = '3';
-      const mockFetch = makeFetchMock(200, {});
-      vi.stubGlobal('fetch', mockFetch);
-
-      const client = new JiraClient();
-      await client.get(`${client.apiBasePath}/issue/SFITLOCAL-1476`);
-
-      const calledUrl: string = mockFetch.mock.calls[0][0];
-      expect(calledUrl).toContain('/rest/api/3/issue/SFITLOCAL-1476');
     });
 
     it('returns plain text when the response Content-Type is not JSON', async () => {
