@@ -62,8 +62,6 @@ export function getIssuesTool(
 
       // Jira Cloud REST API v3 removed GET /search (410 Gone) in favour of
       // GET /search/jql. Jira Server/DC v2 still uses the original /search path.
-      // Jira Cloud REST API v3 removed GET /search (410 Gone) in favour of
-      // GET /search/jql. Jira Server/DC v2 still uses the original /search path.
       const searchPath =
         client.apiVersion === '3'
           ? `${client.apiBasePath}/search/jql`

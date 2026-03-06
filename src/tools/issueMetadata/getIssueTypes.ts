@@ -27,11 +27,12 @@ export function getIssueTypesTool(
     handler: async (rawInput: any) => {
       const input = rawInput as z.infer<typeof getIssueTypesSchema>;
       const raw = input.projectId
-        ? await client.get<unknown[]>(
+        ? await client.get<unknown>(
             `${client.apiBasePath}/issuetype/project?projectId=${encodeURIComponent(input.projectId)}`
           )
-        : await client.get<unknown[]>(`${client.apiBasePath}/issuetype`);
+        : await client.get<unknown>(`${client.apiBasePath}/issuetype`);
 
+      if (!Array.isArray(raw)) return [];
       return (raw as Record<string, unknown>[]).map((t) => ({
         id: t.id,
         name: t.name,

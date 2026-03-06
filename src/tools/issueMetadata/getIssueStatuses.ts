@@ -28,9 +28,10 @@ export function getIssueStatusesTool(
       const input = rawInput as z.infer<typeof getIssueStatusesSchema>;
       if (input.projectIdOrKey) {
         // Project-scoped: returns array of { name (issueType), statuses[] }
-        const raw = await client.get<unknown[]>(
+        const raw = await client.get<unknown>(
           `${client.apiBasePath}/project/${encodeURIComponent(input.projectIdOrKey)}/statuses`
         );
+        if (!Array.isArray(raw)) return [];
         return (raw as Record<string, unknown>[]).map((group) => ({
           name: group.name,
           statuses: Array.isArray(group.statuses)
@@ -50,7 +51,8 @@ export function getIssueStatusesTool(
         }));
       }
       // Global: returns array of status objects.
-      const raw = await client.get<unknown[]>(`${client.apiBasePath}/status`);
+      const raw = await client.get<unknown>(`${client.apiBasePath}/status`);
+      if (!Array.isArray(raw)) return [];
       return (raw as Record<string, unknown>[]).map((s) => ({
         id: s.id,
         name: s.name,
