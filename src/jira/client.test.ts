@@ -110,6 +110,7 @@ describe('JiraClient', () => {
       delete process.env.JIRA_API_VERSION;
       const client = new JiraClient();
       expect(client.apiBasePath).toBe('/rest/api/3');
+      expect(client.apiVersion).toBe('3');
     });
 
     it('defaults apiBasePath to /rest/api/2 for Server/DC credentials (username+password)', () => {
@@ -120,12 +121,14 @@ describe('JiraClient', () => {
       process.env.JIRA_PASSWORD = 'pass';
       const client = new JiraClient();
       expect(client.apiBasePath).toBe('/rest/api/2');
+      expect(client.apiVersion).toBe('2');
     });
 
     it('JIRA_API_VERSION=2 overrides Cloud default of 3', () => {
       process.env.JIRA_API_VERSION = '2';
       const client = new JiraClient();
       expect(client.apiBasePath).toBe('/rest/api/2');
+      expect(client.apiVersion).toBe('2');
     });
 
     it('JIRA_API_VERSION=3 overrides Server/DC default of 2', () => {
@@ -136,6 +139,7 @@ describe('JiraClient', () => {
       process.env.JIRA_API_VERSION = '3';
       const client = new JiraClient();
       expect(client.apiBasePath).toBe('/rest/api/3');
+      expect(client.apiVersion).toBe('3');
     });
   });
 

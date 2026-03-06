@@ -25,6 +25,7 @@ export class JiraClient {
   private baseUrl: string;
   private authHeader: string;
   readonly apiBasePath: string;
+  readonly apiVersion: string;
 
   constructor() {
     this.baseUrl = env
@@ -61,6 +62,7 @@ export class JiraClient {
       .get('JIRA_API_VERSION')
       .default(defaultApiVersion)
       .asString();
+    this.apiVersion = apiVersion;
     this.apiBasePath = `/rest/api/${apiVersion}`;
   }
 

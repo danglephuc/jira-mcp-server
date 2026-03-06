@@ -40,6 +40,7 @@ describe('getIssuesTool', () => {
   const mockClient = {
     get: vi.fn<() => Promise<unknown>>().mockResolvedValue(mockIssueList),
     apiBasePath: '/rest/api/2',
+    apiVersion: '2',
   } as unknown as JiraClient;
 
   const tool = getIssuesTool(mockClient, createTranslationHelper());
@@ -63,7 +64,7 @@ describe('getIssuesTool', () => {
     expect(result).toEqual(mockIssueList);
   });
 
-  it('calls client.get with no params when called with empty input', async () => {
+  it('calls client.get with /search for API v2 (Server/DC)', async () => {
     await tool.handler({});
 
     expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/search', {});
@@ -122,6 +123,53 @@ describe('getIssuesTool', () => {
       jql: 'project = PROJ',
       fields: 'summary,status',
       startAt: 0,
+      maxResults: 10,
+      expand: 'names',
+    });
+  });
+});
+
+describe('getIssuesTool (API v3 — Jira Cloud)', () => {
+  const mockClientV3 = {
+    get: vi.fn<() => Promise<unknown>>().mockResolvedValue(mockIssueList),
+    apiBasePath: '/rest/api/3',
+    apiVersion: '3',
+  } as unknown as JiraClient;
+
+  const toolV3 = getIssuesTool(mockClientV3, createTranslationHelper());
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (mockClientV3.get as ReturnType<typeof vi.fn>).mockResolvedValue(
+      mockIssueList
+    );
+  });
+
+  it('calls client.get with /search/jql for API v3 (Cloud)', async () => {
+    await toolV3.handler({});
+
+    expect(mockClientV3.get).toHaveBeenCalledWith('/rest/api/3/search/jql', {});
+  });
+
+  it('passes jql to /search/jql for API v3', async () => {
+    await toolV3.handler({ jql: 'project = SFITLOCAL' });
+
+    expect(mockClientV3.get).toHaveBeenCalledWith('/rest/api/3/search/jql', {
+      jql: 'project = SFITLOCAL',
+    });
+  });
+
+  it('combines multiple filters with /search/jql for API v3', async () => {
+    await toolV3.handler({
+      jql: 'project = CLOUD',
+      fields: 'summary,status',
+      maxResults: 10,
+      expand: 'names',
+    });
+
+    expect(mockClientV3.get).toHaveBeenCalledWith('/rest/api/3/search/jql', {
+      jql: 'project = CLOUD',
+      fields: 'summary,status',
       maxResults: 10,
       expand: 'names',
     });

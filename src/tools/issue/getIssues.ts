@@ -59,7 +59,13 @@ export function getIssuesTool(
       if (input.maxResults !== undefined) params.maxResults = input.maxResults;
       if (input.expand !== undefined) params.expand = input.expand;
 
-      return client.get(`${client.apiBasePath}/search`, params);
+      // Jira Cloud REST API v3 removed GET /search (410 Gone) in favour of
+      // GET /search/jql. Jira Server/DC v2 still uses the original /search path.
+      const searchPath =
+        client.apiVersion === '3'
+          ? `${client.apiBasePath}/search/jql`
+          : `${client.apiBasePath}/search`;
+      return client.get(searchPath, params);
     },
   };
 }
