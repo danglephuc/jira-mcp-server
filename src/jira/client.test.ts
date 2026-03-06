@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { Buffer } from 'node:buffer';
 import { JiraClient, JiraApiError } from './client.js';
 
 // ---------------------------------------------------------------------------
@@ -287,6 +288,81 @@ describe('JiraClient', () => {
       const client = new JiraClient();
       await expect(
         client.get(`${client.apiBasePath}/search`)
+      ).rejects.toBeInstanceOf(JiraApiError);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // getAttachmentBuffer()
+  // -------------------------------------------------------------------------
+
+  describe('getAttachmentBuffer()', () => {
+    function makeBinaryFetchMock(
+      status: number,
+      data: Uint8Array,
+      contentType = 'image/png'
+    ) {
+      return vi.fn().mockResolvedValue({
+        ok: status >= 200 && status < 300,
+        status,
+        headers: {
+          get: (name: string) => (name === 'content-type' ? contentType : null),
+        },
+        arrayBuffer: () => Promise.resolve(data.buffer),
+        json: () => Promise.resolve({}),
+        text: () => Promise.resolve(''),
+      });
+    }
+
+    it('returns base64-encoded data and mime type on success', async () => {
+      const payload = new Uint8Array([137, 80, 78, 71]); // PNG magic bytes
+      vi.stubGlobal('fetch', makeBinaryFetchMock(200, payload, 'image/png'));
+
+      const client = new JiraClient();
+      const result = await client.getAttachmentBuffer(
+        'https://example.atlassian.net/secure/attachment/10010/screenshot.png'
+      );
+
+      expect(result.base64).toBe(Buffer.from(payload).toString('base64'));
+      expect(result.mimeType).toBe('image/png');
+    });
+
+    it('sends the Authorization header', async () => {
+      const payload = new Uint8Array([0]);
+      const mockFetch = makeBinaryFetchMock(200, payload);
+      vi.stubGlobal('fetch', mockFetch);
+
+      const client = new JiraClient();
+      await client.getAttachmentBuffer('https://example.atlassian.net/file');
+
+      const headers = mockFetch.mock.calls[0][1].headers;
+      expect(headers['Authorization']).toMatch(/^Basic /);
+    });
+
+    it('defaults mimeType to application/octet-stream when not provided', async () => {
+      const payload = new Uint8Array([1, 2, 3]);
+      vi.stubGlobal(
+        'fetch',
+        makeBinaryFetchMock(200, payload, null as unknown as string)
+      );
+
+      const client = new JiraClient();
+      const result = await client.getAttachmentBuffer(
+        'https://example.atlassian.net/file'
+      );
+
+      expect(result.mimeType).toBe('application/octet-stream');
+    });
+
+    it('throws JiraApiError on a non-OK response', async () => {
+      vi.stubGlobal(
+        'fetch',
+        makeFetchMock(404, { errorMessages: ['Not found'] })
+      );
+
+      const client = new JiraClient();
+      await expect(
+        client.getAttachmentBuffer('https://example.atlassian.net/file')
       ).rejects.toBeInstanceOf(JiraApiError);
     });
   });

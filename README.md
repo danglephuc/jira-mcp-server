@@ -4,7 +4,7 @@ A **read-only** [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 
 ## Features
 
-- 🔍 **Read-only access to Jira** — list issues, get issue details, query metadata
+- 🔍 **Read-only access to Jira** — list issues, get issue details, download attachments, query metadata
 - 🔐 **Flexible authentication** — email + API token (Cloud) or username + password (Server/DC)
 - 📦 **Toolset system** — enable only the tools you need
 - 🔤 **Configurable tool prefix** — avoid naming conflicts across multiple MCP servers
@@ -15,10 +15,12 @@ A **read-only** [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 
 ### Toolset: `issue`
 
-| Tool         | Description                          | Jira Endpoint                     |
-| ------------ | ------------------------------------ | --------------------------------- |
-| `get_issues` | Search issues with JQL filters       | `GET /rest/api/3/search`          |
-| `get_issue`  | Get a single issue with full details | `GET /rest/api/3/issue/:issueKey` |
+| Tool                  | Description                                   | Jira Endpoint                              |
+| --------------------- | --------------------------------------------- | ------------------------------------------ |
+| `get_issues`          | Search issues with JQL filters                | `GET /rest/api/3/search`                   |
+| `get_issue`           | Get a single issue with full details          | `GET /rest/api/3/issue/:issueKey`          |
+| `get_attachments`     | List attachments for an issue                 | `GET /rest/api/3/issue/:issueKey`          |
+| `download_attachment` | Download an attachment file as base64 content | `GET /rest/api/3/attachment/:id` + content |
 
 ### Toolset: `issue_metadata`
 
