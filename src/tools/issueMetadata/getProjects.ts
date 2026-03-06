@@ -55,7 +55,7 @@ export function getProjectsTool(
       if (input.orderBy !== undefined) params.orderBy = input.orderBy;
       if (input.expand !== undefined) params.expand = input.expand;
 
-      return client.get('/rest/api/3/project/search', params);
+      return client.get(`${client.apiBasePath}/project/search`, params);
     },
   };
 }

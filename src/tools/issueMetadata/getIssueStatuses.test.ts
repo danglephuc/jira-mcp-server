@@ -24,6 +24,7 @@ const mockStatuses = [
 describe('getIssueStatusesTool', () => {
   const mockClient = {
     get: vi.fn<() => Promise<unknown>>().mockResolvedValue(mockStatuses),
+    apiBasePath: '/rest/api/2',
   } as unknown as JiraClient;
 
   const tool = getIssueStatusesTool(mockClient, createTranslationHelper());
@@ -50,14 +51,14 @@ describe('getIssueStatusesTool', () => {
   it('calls the global statuses endpoint when no projectIdOrKey is given', async () => {
     await tool.handler({});
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/status');
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/status');
   });
 
   it('calls the project statuses endpoint when projectIdOrKey is given', async () => {
     await tool.handler({ projectIdOrKey: 'PROJ' });
 
     expect(mockClient.get).toHaveBeenCalledWith(
-      '/rest/api/3/project/PROJ/statuses'
+      '/rest/api/2/project/PROJ/statuses'
     );
   });
 });

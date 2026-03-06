@@ -28,10 +28,10 @@ export function getIssueStatusesTool(
       const input = rawInput as z.infer<typeof getIssueStatusesSchema>;
       if (input.projectIdOrKey) {
         return client.get(
-          `/rest/api/3/project/${encodeURIComponent(input.projectIdOrKey)}/statuses`
+          `${client.apiBasePath}/project/${encodeURIComponent(input.projectIdOrKey)}/statuses`
         );
       }
-      return client.get('/rest/api/3/status');
+      return client.get(`${client.apiBasePath}/status`);
     },
   };
 }

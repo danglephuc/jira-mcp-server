@@ -30,6 +30,7 @@ const mockIssue = {
 describe('getIssueTool', () => {
   const mockClient = {
     get: vi.fn<() => Promise<unknown>>().mockResolvedValue(mockIssue),
+    apiBasePath: '/rest/api/2',
   } as unknown as JiraClient;
 
   const tool = getIssueTool(mockClient, createTranslationHelper());
@@ -54,19 +55,28 @@ describe('getIssueTool', () => {
   it('calls client.get with the correct URL for a given issue key', async () => {
     await tool.handler({ issueKey: 'PROJ-1' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issue/PROJ-1', {});
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issue/PROJ-1', {});
   });
 
   it('calls client.get with a numeric issue ID', async () => {
     await tool.handler({ issueKey: '10001' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issue/10001', {});
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issue/10001', {});
+  });
+
+  it('uses /rest/api/2 path by default (Server/DC compatibility)', async () => {
+    await tool.handler({ issueKey: 'SFITLOCAL-1476' });
+
+    expect(mockClient.get).toHaveBeenCalledWith(
+      '/rest/api/2/issue/SFITLOCAL-1476',
+      {}
+    );
   });
 
   it('passes the fields param when provided', async () => {
     await tool.handler({ issueKey: 'PROJ-1', fields: 'summary,status' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issue/PROJ-1', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issue/PROJ-1', {
       fields: 'summary,status',
     });
   });
@@ -77,7 +87,7 @@ describe('getIssueTool', () => {
       expand: 'renderedFields,changelog',
     });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issue/PROJ-1', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issue/PROJ-1', {
       expand: 'renderedFields,changelog',
     });
   });
@@ -85,6 +95,6 @@ describe('getIssueTool', () => {
   it('omits optional params when not provided', async () => {
     await tool.handler({ issueKey: 'PROJ-1' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issue/PROJ-1', {});
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issue/PROJ-1', {});
   });
 });

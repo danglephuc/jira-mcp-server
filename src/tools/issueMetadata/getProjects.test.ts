@@ -28,6 +28,7 @@ const mockProjects = {
 describe('getProjectsTool', () => {
   const mockClient = {
     get: vi.fn<() => Promise<unknown>>().mockResolvedValue(mockProjects),
+    apiBasePath: '/rest/api/2',
   } as unknown as JiraClient;
 
   const tool = getProjectsTool(mockClient, createTranslationHelper());
@@ -55,7 +56,7 @@ describe('getProjectsTool', () => {
     await tool.handler({});
 
     expect(mockClient.get).toHaveBeenCalledWith(
-      '/rest/api/3/project/search',
+      '/rest/api/2/project/search',
       {}
     );
   });
@@ -63,7 +64,7 @@ describe('getProjectsTool', () => {
   it('maps query to the query param', async () => {
     await tool.handler({ query: 'alpha' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/project/search', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/project/search', {
       query: 'alpha',
     });
   });
@@ -71,7 +72,7 @@ describe('getProjectsTool', () => {
   it('maps pagination params', async () => {
     await tool.handler({ startAt: 50, maxResults: 25 });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/project/search', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/project/search', {
       startAt: 50,
       maxResults: 25,
     });
@@ -80,7 +81,7 @@ describe('getProjectsTool', () => {
   it('maps orderBy param', async () => {
     await tool.handler({ orderBy: 'name' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/project/search', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/project/search', {
       orderBy: 'name',
     });
   });

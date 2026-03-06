@@ -17,7 +17,7 @@ export function getFieldsTool(
     ),
     schema: getFieldsSchema as unknown as z.ZodObject<z.ZodRawShape>,
     handler: async () => {
-      return client.get('/rest/api/3/field');
+      return client.get(`${client.apiBasePath}/field`);
     },
   };
 }

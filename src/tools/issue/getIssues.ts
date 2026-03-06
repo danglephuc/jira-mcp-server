@@ -59,7 +59,7 @@ export function getIssuesTool(
       if (input.maxResults !== undefined) params.maxResults = input.maxResults;
       if (input.expand !== undefined) params.expand = input.expand;
 
-      return client.get('/rest/api/3/search', params);
+      return client.get(`${client.apiBasePath}/search`, params);
     },
   };
 }

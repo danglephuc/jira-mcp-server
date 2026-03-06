@@ -24,6 +24,7 @@ const mockIssueTypes = [
 describe('getIssueTypesTool', () => {
   const mockClient = {
     get: vi.fn<() => Promise<unknown>>().mockResolvedValue(mockIssueTypes),
+    apiBasePath: '/rest/api/2',
   } as unknown as JiraClient;
 
   const tool = getIssueTypesTool(mockClient, createTranslationHelper());
@@ -50,14 +51,14 @@ describe('getIssueTypesTool', () => {
   it('calls the global issue types endpoint when no projectId is given', async () => {
     await tool.handler({});
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/issuetype');
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/issuetype');
   });
 
   it('calls the project issue types endpoint when projectId is given', async () => {
     await tool.handler({ projectId: '10000' });
 
     expect(mockClient.get).toHaveBeenCalledWith(
-      '/rest/api/3/issuetype/project?projectId=10000'
+      '/rest/api/2/issuetype/project?projectId=10000'
     );
   });
 });

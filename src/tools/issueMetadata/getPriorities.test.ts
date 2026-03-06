@@ -30,6 +30,7 @@ const mockPriorities = [
 describe('getPrioritiesTool', () => {
   const mockClient = {
     get: vi.fn<() => Promise<unknown>>().mockResolvedValue(mockPriorities),
+    apiBasePath: '/rest/api/2',
   } as unknown as JiraClient;
 
   const tool = getPrioritiesTool(mockClient, createTranslationHelper());
@@ -56,6 +57,6 @@ describe('getPrioritiesTool', () => {
   it('calls client.get with the priorities endpoint', async () => {
     await tool.handler({});
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/priority');
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/priority');
   });
 });

@@ -39,6 +39,7 @@ const mockIssueList = {
 describe('getIssuesTool', () => {
   const mockClient = {
     get: vi.fn<() => Promise<unknown>>().mockResolvedValue(mockIssueList),
+    apiBasePath: '/rest/api/2',
   } as unknown as JiraClient;
 
   const tool = getIssuesTool(mockClient, createTranslationHelper());
@@ -65,13 +66,13 @@ describe('getIssuesTool', () => {
   it('calls client.get with no params when called with empty input', async () => {
     await tool.handler({});
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/search', {});
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/search', {});
   });
 
   it('maps jql to the jql query param', async () => {
     await tool.handler({ jql: 'project = PROJ AND status = Open' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/search', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/search', {
       jql: 'project = PROJ AND status = Open',
     });
   });
@@ -79,7 +80,7 @@ describe('getIssuesTool', () => {
   it('maps fields to the fields query param', async () => {
     await tool.handler({ fields: 'summary,status,assignee' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/search', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/search', {
       fields: 'summary,status,assignee',
     });
   });
@@ -87,7 +88,7 @@ describe('getIssuesTool', () => {
   it('maps startAt to the startAt query param', async () => {
     await tool.handler({ startAt: 50 });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/search', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/search', {
       startAt: 50,
     });
   });
@@ -95,7 +96,7 @@ describe('getIssuesTool', () => {
   it('maps maxResults to the maxResults query param', async () => {
     await tool.handler({ maxResults: 25 });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/search', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/search', {
       maxResults: 25,
     });
   });
@@ -103,7 +104,7 @@ describe('getIssuesTool', () => {
   it('maps expand to the expand query param', async () => {
     await tool.handler({ expand: 'renderedFields,names' });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/search', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/search', {
       expand: 'renderedFields,names',
     });
   });
@@ -117,7 +118,7 @@ describe('getIssuesTool', () => {
       expand: 'names',
     });
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/search', {
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/search', {
       jql: 'project = PROJ',
       fields: 'summary,status',
       startAt: 0,

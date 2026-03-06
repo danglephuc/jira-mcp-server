@@ -24,6 +24,7 @@ export class JiraApiError extends Error {
 export class JiraClient {
   private baseUrl: string;
   private authHeader: string;
+  readonly apiBasePath: string;
 
   constructor() {
     this.baseUrl = env
@@ -31,6 +32,9 @@ export class JiraClient {
       .required()
       .asString()
       .replace(/\/+$/, '');
+
+    const apiVersion = env.get('JIRA_API_VERSION').default('2').asString();
+    this.apiBasePath = `/rest/api/${apiVersion}`;
 
     const email = env.get('JIRA_EMAIL').asString();
     const apiToken = env.get('JIRA_API_TOKEN').asString();

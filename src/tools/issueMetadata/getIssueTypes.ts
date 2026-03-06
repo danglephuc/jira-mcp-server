@@ -28,10 +28,10 @@ export function getIssueTypesTool(
       const input = rawInput as z.infer<typeof getIssueTypesSchema>;
       if (input.projectId) {
         return client.get(
-          `/rest/api/3/issuetype/project?projectId=${encodeURIComponent(input.projectId)}`
+          `${client.apiBasePath}/issuetype/project?projectId=${encodeURIComponent(input.projectId)}`
         );
       }
-      return client.get('/rest/api/3/issuetype');
+      return client.get(`${client.apiBasePath}/issuetype`);
     },
   };
 }

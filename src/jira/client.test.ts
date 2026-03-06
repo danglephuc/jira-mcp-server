@@ -35,6 +35,7 @@ function clearEnv() {
   delete process.env.JIRA_API_TOKEN;
   delete process.env.JIRA_USERNAME;
   delete process.env.JIRA_PASSWORD;
+  delete process.env.JIRA_API_VERSION;
 }
 
 // ---------------------------------------------------------------------------
@@ -99,10 +100,22 @@ describe('JiraClient', () => {
       vi.stubGlobal('fetch', mockFetch);
 
       const client = new JiraClient();
-      client.get('/rest/api/3/search');
+      client.get('/rest/api/2/search');
 
       const calledUrl: string = mockFetch.mock.calls[0][0];
       expect(calledUrl).not.toContain('//rest');
+    });
+
+    it('defaults apiBasePath to /rest/api/2 when JIRA_API_VERSION is not set', () => {
+      delete process.env.JIRA_API_VERSION;
+      const client = new JiraClient();
+      expect(client.apiBasePath).toBe('/rest/api/2');
+    });
+
+    it('uses /rest/api/3 when JIRA_API_VERSION=3', () => {
+      process.env.JIRA_API_VERSION = '3';
+      const client = new JiraClient();
+      expect(client.apiBasePath).toBe('/rest/api/3');
     });
   });
 
@@ -116,7 +129,7 @@ describe('JiraClient', () => {
       vi.stubGlobal('fetch', makeFetchMock(200, responseBody));
 
       const client = new JiraClient();
-      const result = await client.get('/rest/api/3/search');
+      const result = await client.get(`${client.apiBasePath}/search`);
 
       expect(result).toEqual(responseBody);
     });
@@ -126,7 +139,7 @@ describe('JiraClient', () => {
       vi.stubGlobal('fetch', mockFetch);
 
       const client = new JiraClient();
-      await client.get('/rest/api/3/search');
+      await client.get(`${client.apiBasePath}/search`);
 
       const headers = mockFetch.mock.calls[0][1].headers;
       expect(headers['Authorization']).toMatch(/^Basic /);
@@ -142,7 +155,7 @@ describe('JiraClient', () => {
       vi.stubGlobal('fetch', mockFetch);
 
       const client = new JiraClient();
-      await client.get('/rest/api/3/search');
+      await client.get(`${client.apiBasePath}/search`);
 
       const headers = mockFetch.mock.calls[0][1].headers;
       expect(headers['Authorization']).toMatch(/^Basic /);
@@ -153,7 +166,7 @@ describe('JiraClient', () => {
       vi.stubGlobal('fetch', mockFetch);
 
       const client = new JiraClient();
-      await client.get('/rest/api/3/search', {
+      await client.get(`${client.apiBasePath}/search`, {
         jql: 'project = MYPROJ',
         maxResults: 10,
       });
@@ -168,7 +181,7 @@ describe('JiraClient', () => {
       vi.stubGlobal('fetch', mockFetch);
 
       const client = new JiraClient();
-      await client.get('/rest/api/3/search', {
+      await client.get(`${client.apiBasePath}/search`, {
         jql: undefined as never,
         maxResults: 10,
       });
@@ -176,6 +189,29 @@ describe('JiraClient', () => {
       const calledUrl: string = mockFetch.mock.calls[0][0];
       expect(calledUrl).not.toContain('jql=');
       expect(calledUrl).toContain('maxResults=10');
+    });
+
+    it('includes /rest/api/2 in the request URL by default', async () => {
+      const mockFetch = makeFetchMock(200, {});
+      vi.stubGlobal('fetch', mockFetch);
+
+      const client = new JiraClient();
+      await client.get(`${client.apiBasePath}/issue/SFITLOCAL-1476`);
+
+      const calledUrl: string = mockFetch.mock.calls[0][0];
+      expect(calledUrl).toContain('/rest/api/2/issue/SFITLOCAL-1476');
+    });
+
+    it('includes /rest/api/3 in the request URL when JIRA_API_VERSION=3', async () => {
+      process.env.JIRA_API_VERSION = '3';
+      const mockFetch = makeFetchMock(200, {});
+      vi.stubGlobal('fetch', mockFetch);
+
+      const client = new JiraClient();
+      await client.get(`${client.apiBasePath}/issue/SFITLOCAL-1476`);
+
+      const calledUrl: string = mockFetch.mock.calls[0][0];
+      expect(calledUrl).toContain('/rest/api/3/issue/SFITLOCAL-1476');
     });
 
     it('returns plain text when the response Content-Type is not JSON', async () => {
@@ -198,7 +234,7 @@ describe('JiraClient', () => {
 
       const client = new JiraClient();
       await expect(
-        client.get('/rest/api/3/issue/PROJ-999')
+        client.get(`${client.apiBasePath}/issue/PROJ-999`)
       ).rejects.toBeInstanceOf(JiraApiError);
     });
 
@@ -208,7 +244,7 @@ describe('JiraClient', () => {
 
       const client = new JiraClient();
       try {
-        await client.get('/rest/api/3/search');
+        await client.get(`${client.apiBasePath}/search`);
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err).toBeInstanceOf(JiraApiError);
@@ -222,9 +258,9 @@ describe('JiraClient', () => {
       vi.stubGlobal('fetch', makeFetchMock(500, { error: 'Server error' }));
 
       const client = new JiraClient();
-      await expect(client.get('/rest/api/3/search')).rejects.toBeInstanceOf(
-        JiraApiError
-      );
+      await expect(
+        client.get(`${client.apiBasePath}/search`)
+      ).rejects.toBeInstanceOf(JiraApiError);
     });
   });
 });

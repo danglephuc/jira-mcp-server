@@ -17,7 +17,7 @@ export function getPrioritiesTool(
     ),
     schema: getPrioritiesSchema as unknown as z.ZodObject<z.ZodRawShape>,
     handler: async () => {
-      return client.get('/rest/api/3/priority');
+      return client.get(`${client.apiBasePath}/priority`);
     },
   };
 }

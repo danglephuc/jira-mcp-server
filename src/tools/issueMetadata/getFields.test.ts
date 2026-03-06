@@ -32,6 +32,7 @@ const mockFields = [
 describe('getFieldsTool', () => {
   const mockClient = {
     get: vi.fn<() => Promise<unknown>>().mockResolvedValue(mockFields),
+    apiBasePath: '/rest/api/2',
   } as unknown as JiraClient;
 
   const tool = getFieldsTool(mockClient, createTranslationHelper());
@@ -56,6 +57,6 @@ describe('getFieldsTool', () => {
   it('calls client.get with the fields endpoint', async () => {
     await tool.handler({});
 
-    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/3/field');
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/field');
   });
 });

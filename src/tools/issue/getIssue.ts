@@ -37,7 +37,10 @@ export function getIssueTool(
       if (input.fields) params.fields = input.fields;
       if (input.expand) params.expand = input.expand;
 
-      return client.get(`/rest/api/3/issue/${input.issueKey}`, params);
+      return client.get(
+        `${client.apiBasePath}/issue/${input.issueKey}`,
+        params
+      );
     },
   };
 }
