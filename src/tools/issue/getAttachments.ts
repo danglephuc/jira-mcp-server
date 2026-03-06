@@ -24,7 +24,7 @@ export function getAttachmentsTool(
 
       // Fetch the issue with only the attachment field to minimise payload size.
       const issue = await client.get<{
-        fields: { attachment: unknown[] };
+        fields: { attachment?: unknown[] };
       }>(`${client.apiBasePath}/issue/${input.issueKey}`, {
         fields: 'attachment',
       });
