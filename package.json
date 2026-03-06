@@ -1,0 +1,49 @@
+{
+  "name": "jira-mcp-server",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "jira-mcp-server": "./build/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "prepare": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "inspect": "npx @modelcontextprotocol/inspector tsx src/index.ts"
+  },
+  "files": [
+    "build"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.24.0",
+    "cosmiconfig": "^9.0.0",
+    "dotenv": "^16.5.0",
+    "env-var": "^7.5.0",
+    "pino": "^9.9.0",
+    "pino-pretty": "^13.1.1",
+    "yargs": "^18.0.0",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^22.14.1",
+    "@types/yargs": "^17.0.35",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "@vitest/coverage-v8": "^3.0.5",
+    "@release-it/conventional-changelog": "^10.0.5",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "release-it": "^19.2.4",
+    "tsx": "^4.20.6",
+    "typescript": "^5.8.3",
+    "vitest": "^3.0.5"
+  }
+}

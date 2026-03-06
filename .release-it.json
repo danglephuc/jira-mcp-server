@@ -1,0 +1,23 @@
+{
+  "git": {
+    "tagName": "v${version}",
+    "commitMessage": "chore(bump): v${version}",
+    "requireCleanWorkingDir": true
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "conventionalcommits",
+      "infile": "CHANGELOG.md",
+      "changelogHeader": "# Changelog"
+    }
+  },
+  "github": {
+    "release": true,
+    "releaseName": "v${version}",
+    "tokenRef": "GITHUB_TOKEN"
+  },
+  "npm": false,
+  "hooks": {
+    "after:bump": "npm run build"
+  }
+}
