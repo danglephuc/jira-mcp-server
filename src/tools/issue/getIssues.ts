@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ToolDefinition } from '../../types/tool.js';
 import { TranslationHelper } from '../../createTranslationHelper.js';
 import { JiraClient } from '../../jira/client.js';
+import { mapSearchResult } from './mapIssue.js';
 
 const getIssuesSchema = z.object({
   jql: z
@@ -61,11 +62,14 @@ export function getIssuesTool(
 
       // Jira Cloud REST API v3 removed GET /search (410 Gone) in favour of
       // GET /search/jql. Jira Server/DC v2 still uses the original /search path.
+      // Jira Cloud REST API v3 removed GET /search (410 Gone) in favour of
+      // GET /search/jql. Jira Server/DC v2 still uses the original /search path.
       const searchPath =
         client.apiVersion === '3'
           ? `${client.apiBasePath}/search/jql`
           : `${client.apiBasePath}/search`;
-      return client.get(searchPath, params);
+      const raw = await client.get(searchPath, params);
+      return mapSearchResult(raw, client.apiVersion);
     },
   };
 }

@@ -48,10 +48,16 @@ describe('getPrioritiesTool', () => {
     expect(tool.description.length).toBeGreaterThan(0);
   });
 
-  it('returns the list of priorities from the client', async () => {
-    const result = await tool.handler({});
+  it('returns mapped priorities (noise fields stripped)', async () => {
+    const result = (await tool.handler({})) as Record<string, unknown>[];
 
-    expect(result).toEqual(mockPriorities);
+    expect(result).toEqual([
+      { id: '1', name: 'Highest', description: undefined },
+      { id: '2', name: 'High', description: undefined },
+      { id: '3', name: 'Medium', description: undefined },
+      { id: '4', name: 'Low', description: undefined },
+      { id: '5', name: 'Lowest', description: undefined },
+    ]);
   });
 
   it('calls client.get with the priorities endpoint', async () => {

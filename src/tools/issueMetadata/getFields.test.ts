@@ -48,10 +48,26 @@ describe('getFieldsTool', () => {
     expect(tool.description.length).toBeGreaterThan(0);
   });
 
-  it('returns the list of fields from the client', async () => {
-    const result = await tool.handler({});
+  it('returns mapped fields (noise fields stripped)', async () => {
+    const result = (await tool.handler({})) as Record<string, unknown>[];
 
-    expect(result).toEqual(mockFields);
+    expect(result).toEqual([
+      {
+        id: 'summary',
+        name: 'Summary',
+        custom: false,
+        schema: { type: 'string', system: 'summary' },
+      },
+      {
+        id: 'customfield_10001',
+        name: 'Story Points',
+        custom: true,
+        schema: {
+          type: 'number',
+          system: undefined,
+        },
+      },
+    ]);
   });
 
   it('calls client.get with the fields endpoint', async () => {

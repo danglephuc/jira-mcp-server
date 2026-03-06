@@ -29,7 +29,20 @@ export function getAttachmentsTool(
         fields: 'attachment',
       });
 
-      return issue.fields.attachment ?? [];
+      const attachments = (issue.fields.attachment ?? []) as Record<
+        string,
+        unknown
+      >[];
+      return attachments.map((att) => ({
+        id: att.id,
+        filename: att.filename,
+        mimeType: att.mimeType,
+        size: att.size,
+        created: att.created,
+        author: att.author
+          ? { displayName: (att.author as Record<string, unknown>).displayName }
+          : null,
+      }));
     },
   };
 }

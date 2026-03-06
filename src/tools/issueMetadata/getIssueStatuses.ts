@@ -27,11 +27,42 @@ export function getIssueStatusesTool(
     handler: async (rawInput: any) => {
       const input = rawInput as z.infer<typeof getIssueStatusesSchema>;
       if (input.projectIdOrKey) {
-        return client.get(
+        // Project-scoped: returns array of { name (issueType), statuses[] }
+        const raw = await client.get<unknown[]>(
           `${client.apiBasePath}/project/${encodeURIComponent(input.projectIdOrKey)}/statuses`
         );
+        return (raw as Record<string, unknown>[]).map((group) => ({
+          name: group.name,
+          statuses: Array.isArray(group.statuses)
+            ? (group.statuses as Record<string, unknown>[]).map((s) => ({
+                id: s.id,
+                name: s.name,
+                description: s.description,
+                statusCategory: s.statusCategory
+                  ? {
+                      name: (s.statusCategory as Record<string, unknown>).name,
+                      colorName: (s.statusCategory as Record<string, unknown>)
+                        .colorName,
+                    }
+                  : null,
+              }))
+            : [],
+        }));
       }
-      return client.get(`${client.apiBasePath}/status`);
+      // Global: returns array of status objects.
+      const raw = await client.get<unknown[]>(`${client.apiBasePath}/status`);
+      return (raw as Record<string, unknown>[]).map((s) => ({
+        id: s.id,
+        name: s.name,
+        description: s.description,
+        statusCategory: s.statusCategory
+          ? {
+              name: (s.statusCategory as Record<string, unknown>).name,
+              colorName: (s.statusCategory as Record<string, unknown>)
+                .colorName,
+            }
+          : null,
+      }));
     },
   };
 }

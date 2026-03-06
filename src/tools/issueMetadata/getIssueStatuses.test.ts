@@ -42,10 +42,29 @@ describe('getIssueStatusesTool', () => {
     expect(tool.description.length).toBeGreaterThan(0);
   });
 
-  it('returns the list of statuses from the client', async () => {
-    const result = await tool.handler({});
+  it('returns mapped statuses (noise fields stripped)', async () => {
+    const result = (await tool.handler({})) as Record<string, unknown>[];
 
-    expect(result).toEqual(mockStatuses);
+    expect(result).toEqual([
+      {
+        id: '1',
+        name: 'Open',
+        description: undefined,
+        statusCategory: { name: 'To Do', colorName: 'blue-gray' },
+      },
+      {
+        id: '3',
+        name: 'In Progress',
+        description: undefined,
+        statusCategory: { name: 'In Progress', colorName: 'yellow' },
+      },
+      {
+        id: '6',
+        name: 'Closed',
+        description: undefined,
+        statusCategory: { name: 'Done', colorName: 'green' },
+      },
+    ]);
   });
 
   it('calls the global statuses endpoint when no projectIdOrKey is given', async () => {
