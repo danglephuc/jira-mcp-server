@@ -267,17 +267,9 @@ function convertTable(node: AdfNode): string {
   const lines: string[] = [];
   lines.push('| ' + rows[0].join(' | ') + ' |');
 
-  if (hasHeader) {
-    lines.push('| ' + rows[0].map(() => '---').join(' | ') + ' |');
-    for (let i = 1; i < rows.length; i++) {
-      lines.push('| ' + rows[i].join(' | ') + ' |');
-    }
-  } else {
-    // No header row — add an empty separator after the first (data) row.
-    lines.push('| ' + rows[0].map(() => '---').join(' | ') + ' |');
-    for (let i = 1; i < rows.length; i++) {
-      lines.push('| ' + rows[i].join(' | ') + ' |');
-    }
+  lines.push('| ' + rows[0].map(() => '---').join(' | ') + ' |');
+  for (let i = 1; i < rows.length; i++) {
+    lines.push('| ' + rows[i].join(' | ') + ' |');
   }
 
   return lines.join('\n') + '\n\n';

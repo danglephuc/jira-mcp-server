@@ -29,10 +29,10 @@ export function getAttachmentsTool(
         fields: 'attachment',
       });
 
-      const attachments = (issue.fields.attachment ?? []) as Record<
-        string,
-        unknown
-      >[];
+      const rawAttachment = issue.fields.attachment;
+      const attachments = Array.isArray(rawAttachment)
+        ? (rawAttachment as Record<string, unknown>[])
+        : [];
       return attachments.map((att) => ({
         id: att.id,
         filename: att.filename,

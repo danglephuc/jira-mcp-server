@@ -176,9 +176,9 @@ export function mapIssue(raw: unknown, apiVersion: string): MappedIssue {
     issuetype: nameOf(fields.issuetype),
     assignee: mapUser(fields.assignee),
     reporter: mapUser(fields.reporter),
-    creator: usersEqual(mapUser(fields.reporter), mapUser(fields.creator))
-      ? (undefined as unknown as MappedUser | null)
-      : mapUser(fields.creator),
+    ...(!usersEqual(mapUser(fields.reporter), mapUser(fields.creator))
+      ? { creator: mapUser(fields.creator) }
+      : {}),
     created: (fields.created as string) ?? null,
     updated: (fields.updated as string) ?? null,
     resolved: (fields.resolutiondate as string) ?? null,
@@ -203,33 +203,43 @@ export function mapIssue(raw: unknown, apiVersion: string): MappedIssue {
         }
       : null,
     subtasks: Array.isArray(fields.subtasks)
-      ? fields.subtasks.map((s: unknown) => {
-          const sub = s as Record<string, unknown>;
-          const subFields = (sub.fields ?? {}) as Record<string, unknown>;
-          return {
-            key: (sub.key as string) ?? '',
-            summary: (subFields.summary as string) ?? '',
-            status: nameOf(subFields.status),
-          };
-        })
+      ? fields.subtasks
+          .filter((s): s is Record<string, unknown> => !!s && typeof s === 'object')
+          .map((sub) => {
+            const subFields = (sub.fields ?? {}) as Record<string, unknown>;
+            return {
+              key: (sub.key as string) ?? '',
+              summary: (subFields.summary as string) ?? '',
+              status: nameOf(subFields.status),
+            };
+          })
       : [],
   };
 
   // Comments (present when 'comment' field is included or expanded).
   const commentWrapper = fields.comment as { comments?: unknown[] } | undefined;
   if (commentWrapper?.comments && Array.isArray(commentWrapper.comments)) {
-    mapped.comment = commentWrapper.comments.map((c) => {
-      const comment = c as Record<string, unknown>;
-      return {
-        author: mapUser(comment.author),
-        body: mapCommentBody(comment.body, apiVersion),
-        created: (comment.created as string) ?? '',
-        // Only include `updated` when it differs from `created`.
-        ...(comment.updated && comment.updated !== comment.created
-          ? { updated: comment.updated as string }
-          : {}),
-      };
-    });
+    mapped.comment = commentWrapper.comments
+      .filter((c): c is Record<string, unknown> => !!c && typeof c === 'object')
+      .map((comment) => {
+        const created = typeof comment.created === 'string' ? comment.created : '';
+        const updated =
+          typeof comment.updated === 'string' && comment.updated !== created
+            ? comment.updated
+            : undefined;
+
+        const mappedComment: MappedComment = {
+          author: mapUser(comment.author),
+          body: mapCommentBody(comment.body, apiVersion),
+          created,
+        };
+
+        if (updated !== undefined) {
+          mappedComment.updated = updated;
+        }
+
+        return mappedComment;
+      });
   }
 
   // Preserve custom fields with noise stripped.
@@ -250,11 +260,6 @@ export function mapIssue(raw: unknown, apiVersion: string): MappedIssue {
         mapped[key] = cleaned;
       }
     }
-  }
-
-  // Omit `creator` key entirely when it was set to undefined (same as reporter).
-  if (mapped.creator === undefined) {
-    delete mapped.creator;
   }
 
   return mapped;

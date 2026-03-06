@@ -17,7 +17,8 @@ export function getPrioritiesTool(
     ),
     schema: getPrioritiesSchema as unknown as z.ZodObject<z.ZodRawShape>,
     handler: async () => {
-      const raw = await client.get<unknown[]>(`${client.apiBasePath}/priority`);
+      const raw = await client.get<unknown>(`${client.apiBasePath}/priority`);
+      if (!Array.isArray(raw)) return [];
       return (raw as Record<string, unknown>[]).map((p) => ({
         id: p.id,
         name: p.name,
