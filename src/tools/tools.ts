@@ -3,6 +3,8 @@ import { TranslationHelper } from '../createTranslationHelper.js';
 import { ToolsetGroup } from '../types/toolsets.js';
 import { getIssuesTool } from './issue/getIssues.js';
 import { getIssueTool } from './issue/getIssue.js';
+import { getAttachmentsTool } from './issue/getAttachments.js';
+import { downloadAttachmentTool } from './issue/downloadAttachment.js';
 import { getProjectsTool } from './issueMetadata/getProjects.js';
 import { getIssueTypesTool } from './issueMetadata/getIssueTypes.js';
 import { getIssueStatusesTool } from './issueMetadata/getIssueStatuses.js';
@@ -19,7 +21,12 @@ export function allTools(
         name: 'issue',
         description: 'Tools for querying Jira issues (list and single issue).',
         enabled: false,
-        tools: [getIssuesTool(client, helper), getIssueTool(client, helper)],
+        tools: [
+          getIssuesTool(client, helper),
+          getIssueTool(client, helper),
+          getAttachmentsTool(client, helper),
+          downloadAttachmentTool(client, helper),
+        ],
       },
       {
         name: 'issue_metadata',

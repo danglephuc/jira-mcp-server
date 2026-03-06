@@ -98,4 +98,34 @@ export class JiraClient {
 
     return body as T;
   }
+
+  /**
+   * Download binary content from an attachment URL and return it as a
+   * base64-encoded string together with the content type.
+   */
+  async getAttachmentBuffer(
+    attachmentUrl: string
+  ): Promise<{ base64: string; mimeType: string }> {
+    const res = await fetch(attachmentUrl, {
+      method: 'GET',
+      headers: {
+        Authorization: this.authHeader,
+      },
+      redirect: 'follow',
+    });
+
+    if (!res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      const isJson = contentType.includes('application/json');
+      const body = isJson ? await res.json() : await res.text();
+      throw new JiraApiError(res.status, body);
+    }
+
+    const mimeType =
+      res.headers.get('content-type') || 'application/octet-stream';
+    const arrayBuffer = await res.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString('base64');
+
+    return { base64, mimeType };
+  }
 }

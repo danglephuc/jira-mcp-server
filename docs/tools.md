@@ -56,6 +56,60 @@ Retrieve detailed information about a specific Jira issue.
 
 ---
 
+### `get_attachments`
+
+List all attachments (images, files, etc.) for a specific Jira issue.
+
+**Parameters:**
+
+| Name       | Type   | Required | Description                                      |
+| ---------- | ------ | -------- | ------------------------------------------------ |
+| `issueKey` | string | ✅ Yes   | Issue key or ID (e.g. `"PROJ-123"` or `"10001"`) |
+
+**Example:**
+
+```json
+{
+  "issueKey": "PROJ-42"
+}
+```
+
+**Response:** An array of attachment objects, each containing `id`, `filename`, `mimeType`, `size`, `created`, `author`, and `content` (download URL).
+
+---
+
+### `download_attachment`
+
+Download a specific attachment file from a Jira issue as base64-encoded content. Use `get_attachments` first to obtain the attachment ID.
+
+**Parameters:**
+
+| Name           | Type   | Required | Description                                           |
+| -------------- | ------ | -------- | ----------------------------------------------------- |
+| `attachmentId` | string | ✅ Yes   | The ID of the attachment to download (e.g. `"10010"`) |
+
+**Example:**
+
+```json
+{
+  "attachmentId": "10010"
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": "10010",
+  "filename": "screenshot.png",
+  "mimeType": "image/png",
+  "size": 102400,
+  "base64Content": "iVBORw0KGgo..."
+}
+```
+
+---
+
 ## Toolset: `issue_metadata`
 
 ### `get_projects`

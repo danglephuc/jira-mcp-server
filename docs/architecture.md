@@ -20,7 +20,9 @@ jira-mcp-server/
 │   │   ├── tools.ts                    # Declares all available toolsets
 │   │   ├── issue/
 │   │   │   ├── getIssues.ts            # Tool: search issues with JQL
-│   │   │   └── getIssue.ts             # Tool: get single issue
+│   │   │   ├── getIssue.ts             # Tool: get single issue
+│   │   │   ├── getAttachments.ts       # Tool: list issue attachments
+│   │   │   └── downloadAttachment.ts   # Tool: download attachment as base64
 │   │   └── issueMetadata/
 │   │       ├── getProjects.ts
 │   │       ├── getIssueTypes.ts
@@ -122,6 +124,7 @@ type SafeResult<T> =
 - Builds Basic Auth headers automatically
 - Appends query params (skipping `null`/`undefined` values)
 - Parses JSON responses or falls back to plain text
+- Downloads binary attachment content via `getAttachmentBuffer()` and returns base64-encoded data
 - Throws `JiraApiError` for non-2xx responses
 
 ---
