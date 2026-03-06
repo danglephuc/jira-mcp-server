@@ -242,13 +242,11 @@ function convertTable(node: AdfNode): string {
   if (!node.content) return '';
 
   const rows: string[][] = [];
-  let hasHeader = false;
 
   for (const row of node.content) {
     if (row.type !== 'tableRow') continue;
     const cells: string[] = [];
     for (const cell of row.content ?? []) {
-      if (cell.type === 'tableHeader') hasHeader = true;
       cells.push(convertChildren(cell).replace(/\n+/g, ' ').trim());
     }
     rows.push(cells);

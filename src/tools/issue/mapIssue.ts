@@ -204,7 +204,9 @@ export function mapIssue(raw: unknown, apiVersion: string): MappedIssue {
       : null,
     subtasks: Array.isArray(fields.subtasks)
       ? fields.subtasks
-          .filter((s): s is Record<string, unknown> => !!s && typeof s === 'object')
+          .filter(
+            (s): s is Record<string, unknown> => !!s && typeof s === 'object'
+          )
           .map((sub) => {
             const subFields = (sub.fields ?? {}) as Record<string, unknown>;
             return {
@@ -222,7 +224,8 @@ export function mapIssue(raw: unknown, apiVersion: string): MappedIssue {
     mapped.comment = commentWrapper.comments
       .filter((c): c is Record<string, unknown> => !!c && typeof c === 'object')
       .map((comment) => {
-        const created = typeof comment.created === 'string' ? comment.created : '';
+        const created =
+          typeof comment.created === 'string' ? comment.created : '';
         const updated =
           typeof comment.updated === 'string' && comment.updated !== created
             ? comment.updated
