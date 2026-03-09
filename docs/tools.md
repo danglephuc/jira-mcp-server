@@ -84,9 +84,9 @@ Download a specific attachment file from a Jira issue. Use `get_attachments` fir
 
 **Parameters:**
 
-| Name           | Type   | Required | Description                                                                                                         |
-| -------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------- |
-| `attachmentId` | string | ✅ Yes   | The ID of the attachment to download (e.g. `"10010"`)                                                               |
+| Name           | Type   | Required | Description                                                                                                                    |
+| -------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `attachmentId` | string | ✅ Yes   | The ID of the attachment to download (e.g. `"10010"`)                                                                          |
 | `outputPath`   | string | No       | Absolute file path to save the attachment directly to disk. When provided, the file is streamed instead of returned as base64. |
 
 **Example (base64 response):**
