@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { z } from 'zod';
 import { ToolDefinition } from '../../types/tool.js';
 import { TranslationHelper } from '../../createTranslationHelper.js';
@@ -9,6 +10,9 @@ const downloadAttachmentSchema = z.object({
     .describe('The ID of the attachment to download (e.g. "10010")'),
   outputPath: z
     .string()
+    .refine(path.isAbsolute, {
+      message: 'outputPath must be an absolute path',
+    })
     .optional()
     .describe(
       'Absolute file path to save the attachment directly to disk. When provided, the file is streamed to disk instead of being returned as base64.'
