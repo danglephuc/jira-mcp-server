@@ -165,7 +165,9 @@ export class JiraClient {
     // Ensure the target directory exists.
     await mkdir(dirname(outputPath), { recursive: true });
 
-    const nodeReadable = Readable.fromWeb(res.body as import('node:stream/web').ReadableStream);
+    const nodeReadable = Readable.fromWeb(
+      res.body as import('node:stream/web').ReadableStream
+    );
     await pipeline(nodeReadable, createWriteStream(outputPath));
   }
 }

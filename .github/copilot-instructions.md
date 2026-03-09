@@ -9,11 +9,13 @@ Read-only MCP (Model Context Protocol) server that exposes Jira REST API operati
 **Entry point:** `src/index.ts` — parses CLI/env config via `yargs` + `env-var`, creates `JiraClient`, builds toolset group, registers tools, starts stdio transport.
 
 **Core flow:**
+
 ```
 index.ts → allTools() → buildToolsetGroup() → registerTools() → composeToolHandler()
 ```
 
 **Key layers:**
+
 - `src/jira/client.ts` — thin HTTP client wrapping `fetch` with Basic Auth. Auto-selects API version: Cloud (email+token) → v3, Server/DC (username+password) → v2. Override with `JIRA_API_VERSION` env var. Throws `JiraApiError` on non-2xx.
 - `src/tools/` — tool definitions grouped by toolset (`issue/`, `issueMetadata/`). Each file exports a factory function returning a `ToolDefinition`.
 - `src/handlers/` — middleware pipeline assembled by `composeToolHandler` (see Error Handling below).
@@ -34,7 +36,10 @@ const mySchema = z.object({
   issueKey: z.string().describe('Issue key (e.g. "PROJ-123")'),
 });
 
-export function myTool(client: JiraClient, { t }: TranslationHelper): ToolDefinition {
+export function myTool(
+  client: JiraClient,
+  { t }: TranslationHelper
+): ToolDefinition {
   return {
     name: 'my_tool',
     description: t('TOOL_MY_TOOL_DESCRIPTION', 'Default description'),
@@ -59,8 +64,11 @@ Every tool handler is wrapped by a three-layer middleware pipeline in `composeTo
 3. **`wrapWithToolResult`** → converts `SafeResult` to the MCP SDK's `CallToolResult` shape (with `isError: true` for errors).
 
 **Key rule:** Tool handlers should **never** throw intentionally. Just call `client.get()`/etc. and let the pipeline catch exceptions. The `SafeResult<T>` type (`src/types/result.ts`) is the internal contract between pipeline stages:
+
 ```ts
-type SafeResult<T> = { kind: 'ok'; data: T } | { kind: 'error'; message: string; status?: number; details?: unknown };
+type SafeResult<T> =
+  | { kind: 'ok'; data: T }
+  | { kind: 'error'; message: string; status?: number; details?: unknown };
 ```
 
 ## ADF→Markdown Conversion & Issue Mapping
@@ -68,6 +76,7 @@ type SafeResult<T> = { kind: 'ok'; data: T } | { kind: 'error'; message: string;
 Jira Cloud API v3 returns rich text as **Atlassian Document Format (ADF)** — a JSON tree. The `adfToMarkdown()` function (`src/utils/adfToMarkdown.ts`) converts this to Markdown, dramatically reducing token count for LLM consumption. It handles headings, lists, tables, code blocks, inline marks (bold, italic, links), mentions, panels, task lists, and more.
 
 **Issue mapping** (`src/tools/issue/mapIssue.ts`) transforms raw Jira API responses into a lean `MappedIssue` shape for the LLM:
+
 - Strips noise: avatar URLs, self links, account IDs, deeply nested metadata
 - Converts ADF description/comments to Markdown (v3) or passes through plain text (v2)
 - Cleans custom fields: extracts `name`/`value`/`displayName` from objects, drops known noisy fields (`IGNORED_CUSTOM_FIELDS` set)
@@ -78,6 +87,7 @@ When adding new tools that return issue data, use `mapIssue()` to maintain consi
 ## Configuration
 
 Configuration is resolved from CLI flags → env vars → defaults (in that priority). Key env vars:
+
 - `JIRA_URL` (required), `JIRA_EMAIL` + `JIRA_API_TOKEN` (Cloud), or `JIRA_USERNAME` + `JIRA_PASSWORD` (Server/DC)
 - `JIRA_API_VERSION` — override auto-detected API version (`2` or `3`)
 - `MAX_TOKENS` — max tokens per response (default: 50000)
@@ -97,17 +107,17 @@ Configuration is resolved from CLI flags → env vars → defaults (in that prio
 
 ## Commands
 
-| Task | Command |
-|------|---------|
-| Dev (hot reload) | `npm run dev` |
-| MCP Inspector UI | `npm run inspect` (localhost:6274) |
-| Build | `npm run build` (tsc → `build/`) |
-| Type check only | `npm run typecheck` |
-| Tests (watch) | `npm test` |
-| Tests (once) | `npm test -- --run` |
-| Coverage | `npm run test:coverage` |
-| Lint | `npm run lint` / `npm run lint:fix` |
-| Format | `npm run format` / `npm run format:fix` |
+| Task             | Command                                 |
+| ---------------- | --------------------------------------- |
+| Dev (hot reload) | `npm run dev`                           |
+| MCP Inspector UI | `npm run inspect` (localhost:6274)      |
+| Build            | `npm run build` (tsc → `build/`)        |
+| Type check only  | `npm run typecheck`                     |
+| Tests (watch)    | `npm test`                              |
+| Tests (once)     | `npm test -- --run`                     |
+| Coverage         | `npm run test:coverage`                 |
+| Lint             | `npm run lint` / `npm run lint:fix`     |
+| Format           | `npm run format` / `npm run format:fix` |
 
 ## Testing
 

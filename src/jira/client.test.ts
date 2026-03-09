@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Buffer } from 'node:buffer';
+import { PassThrough, Readable } from 'node:stream';
 import { JiraClient, JiraApiError } from './client.js';
 
 vi.mock('node:fs', async (importOriginal) => {
@@ -7,7 +8,6 @@ vi.mock('node:fs', async (importOriginal) => {
   return {
     ...actual,
     createWriteStream: vi.fn(() => {
-      const { PassThrough } = require('node:stream');
       return new PassThrough();
     }),
   };
@@ -396,7 +396,6 @@ describe('JiraClient', () => {
       data: Uint8Array,
       contentType = 'image/png'
     ) {
-      const { Readable } = require('node:stream');
       const readable = Readable.from([Buffer.from(data)]);
       // Convert to a web ReadableStream
       const webStream = Readable.toWeb(readable);
@@ -405,8 +404,7 @@ describe('JiraClient', () => {
         ok: status >= 200 && status < 300,
         status,
         headers: {
-          get: (name: string) =>
-            name === 'content-type' ? contentType : null,
+          get: (name: string) => (name === 'content-type' ? contentType : null),
         },
         body: webStream,
         json: () => Promise.resolve({}),
@@ -431,7 +429,9 @@ describe('JiraClient', () => {
         'https://example.atlassian.net/secure/attachment/10010/screenshot.png',
         expect.objectContaining({
           method: 'GET',
-          headers: expect.objectContaining({ Authorization: expect.any(String) }),
+          headers: expect.objectContaining({
+            Authorization: expect.any(String),
+          }),
         })
       );
     });
