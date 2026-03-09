@@ -1,6 +1,25 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Buffer } from 'node:buffer';
+import { PassThrough, Readable } from 'node:stream';
 import { JiraClient, JiraApiError } from './client.js';
+
+vi.mock('node:fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs')>();
+  return {
+    ...actual,
+    createWriteStream: vi.fn(() => {
+      return new PassThrough();
+    }),
+  };
+});
+
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs/promises')>();
+  return {
+    ...actual,
+    mkdir: vi.fn().mockResolvedValue(undefined),
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -364,6 +383,109 @@ describe('JiraClient', () => {
       await expect(
         client.getAttachmentBuffer('https://example.atlassian.net/file')
       ).rejects.toBeInstanceOf(JiraApiError);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // downloadAttachmentToFile()
+  // -------------------------------------------------------------------------
+
+  describe('downloadAttachmentToFile()', () => {
+    function makeStreamFetchMock(
+      status: number,
+      data: Uint8Array,
+      contentType = 'image/png'
+    ) {
+      const readable = Readable.from([Buffer.from(data)]);
+      // Convert to a web ReadableStream
+      const webStream = Readable.toWeb(readable);
+
+      return vi.fn().mockResolvedValue({
+        ok: status >= 200 && status < 300,
+        status,
+        headers: {
+          get: (name: string) => (name === 'content-type' ? contentType : null),
+        },
+        body: webStream,
+        json: () => Promise.resolve({}),
+        text: () => Promise.resolve(''),
+      });
+    }
+
+    it('streams data to a file on disk', async () => {
+      const payload = new Uint8Array([137, 80, 78, 71]);
+      const mockFetch = makeStreamFetchMock(200, payload);
+      vi.stubGlobal('fetch', mockFetch);
+
+      const client = new JiraClient();
+      await expect(
+        client.downloadAttachmentToFile(
+          'https://example.atlassian.net/secure/attachment/10010/screenshot.png',
+          '/tmp/test/screenshot.png'
+        )
+      ).resolves.toBeUndefined();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://example.atlassian.net/secure/attachment/10010/screenshot.png',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            Authorization: expect.any(String),
+          }),
+        })
+      );
+    });
+
+    it('sends the Authorization header', async () => {
+      const payload = new Uint8Array([0]);
+      const mockFetch = makeStreamFetchMock(200, payload);
+      vi.stubGlobal('fetch', mockFetch);
+
+      const client = new JiraClient();
+      await client.downloadAttachmentToFile(
+        'https://example.atlassian.net/file',
+        '/tmp/out.bin'
+      );
+
+      const headers = mockFetch.mock.calls[0][1].headers;
+      expect(headers['Authorization']).toMatch(/^Basic /);
+    });
+
+    it('throws JiraApiError on a non-OK response', async () => {
+      vi.stubGlobal(
+        'fetch',
+        makeFetchMock(404, { errorMessages: ['Not found'] })
+      );
+
+      const client = new JiraClient();
+      await expect(
+        client.downloadAttachmentToFile(
+          'https://example.atlassian.net/file',
+          '/tmp/out.bin'
+        )
+      ).rejects.toBeInstanceOf(JiraApiError);
+    });
+
+    it('throws when response body is empty', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          status: 200,
+          headers: {
+            get: () => 'image/png',
+          },
+          body: null,
+        })
+      );
+
+      const client = new JiraClient();
+      await expect(
+        client.downloadAttachmentToFile(
+          'https://example.atlassian.net/file',
+          '/tmp/out.bin'
+        )
+      ).rejects.toThrow('Response body is empty');
     });
   });
 });

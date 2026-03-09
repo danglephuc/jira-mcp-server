@@ -1,5 +1,10 @@
 import dotenv from 'dotenv';
 import env from 'env-var';
+import { createWriteStream } from 'node:fs';
+import { mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { Buffer } from 'node:buffer';
 import { URL } from 'node:url';
 
@@ -127,5 +132,42 @@ export class JiraClient {
     const base64 = Buffer.from(arrayBuffer).toString('base64');
 
     return { base64, mimeType };
+  }
+
+  /**
+   * Stream an attachment directly to a file on disk.
+   * This avoids loading the entire file into memory, making it suitable
+   * for large attachments (hundreds of MB or more).
+   */
+  async downloadAttachmentToFile(
+    attachmentUrl: string,
+    outputPath: string
+  ): Promise<void> {
+    const res = await fetch(attachmentUrl, {
+      method: 'GET',
+      headers: {
+        Authorization: this.authHeader,
+      },
+      redirect: 'follow',
+    });
+
+    if (!res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      const isJson = contentType.includes('application/json');
+      const body = isJson ? await res.json() : await res.text();
+      throw new JiraApiError(res.status, body);
+    }
+
+    if (!res.body) {
+      throw new Error('Response body is empty');
+    }
+
+    // Ensure the target directory exists.
+    await mkdir(dirname(outputPath), { recursive: true });
+
+    const nodeReadable = Readable.fromWeb(
+      res.body as import('node:stream/web').ReadableStream
+    );
+    await pipeline(nodeReadable, createWriteStream(outputPath));
   }
 }
