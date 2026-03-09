@@ -80,15 +80,16 @@ List all attachments (images, files, etc.) for a specific Jira issue.
 
 ### `download_attachment`
 
-Download a specific attachment file from a Jira issue as base64-encoded content. Use `get_attachments` first to obtain the attachment ID.
+Download a specific attachment file from a Jira issue. Use `get_attachments` first to obtain the attachment ID. By default the file is returned as base64-encoded content. If `outputPath` is provided, the file is streamed directly to disk (recommended for large files) and a success confirmation is returned instead.
 
 **Parameters:**
 
-| Name           | Type   | Required | Description                                           |
-| -------------- | ------ | -------- | ----------------------------------------------------- |
-| `attachmentId` | string | ✅ Yes   | The ID of the attachment to download (e.g. `"10010"`) |
+| Name           | Type   | Required | Description                                                                                                         |
+| -------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| `attachmentId` | string | ✅ Yes   | The ID of the attachment to download (e.g. `"10010"`)                                                               |
+| `outputPath`   | string | No       | Absolute file path to save the attachment directly to disk. When provided, the file is streamed instead of returned as base64. |
 
-**Example:**
+**Example (base64 response):**
 
 ```json
 {
@@ -96,7 +97,16 @@ Download a specific attachment file from a Jira issue as base64-encoded content.
 }
 ```
 
-**Response:**
+**Example (stream to disk):**
+
+```json
+{
+  "attachmentId": "10010",
+  "outputPath": "/home/user/downloads/screenshot.png"
+}
+```
+
+**Response (base64):**
 
 ```json
 {
@@ -105,6 +115,15 @@ Download a specific attachment file from a Jira issue as base64-encoded content.
   "mimeType": "image/png",
   "size": 102400,
   "base64Content": "iVBORw0KGgo..."
+}
+```
+
+**Response (streamed to disk):**
+
+```json
+{
+  "success": true,
+  "savedTo": "/home/user/downloads/screenshot.png"
 }
 ```
 

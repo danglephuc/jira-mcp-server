@@ -134,4 +134,18 @@ describe('downloadAttachmentTool', () => {
       base64Content: 'iVBORw0KGgo=',
     });
   });
+
+  it('rejects a relative outputPath via schema validation', () => {
+    const result = tool.schema.safeParse({
+      attachmentId: '10010',
+      outputPath: '../../../etc/cron.d/payload',
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe(
+        'outputPath must be an absolute path'
+      );
+    }
+  });
 });
