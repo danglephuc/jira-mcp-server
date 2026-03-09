@@ -7,6 +7,12 @@ const downloadAttachmentSchema = z.object({
   attachmentId: z
     .string()
     .describe('The ID of the attachment to download (e.g. "10010")'),
+  outputPath: z
+    .string()
+    .optional()
+    .describe(
+      'Absolute file path to save the attachment directly to disk. When provided, the file is streamed to disk instead of being returned as base64.'
+    ),
 });
 
 export function downloadAttachmentTool(
@@ -17,7 +23,7 @@ export function downloadAttachmentTool(
     name: 'download_attachment',
     description: t(
       'TOOL_DOWNLOAD_ATTACHMENT_DESCRIPTION',
-      'Downloads a specific attachment file from a Jira issue as base64-encoded content. Use get_attachments first to obtain the attachment ID.'
+      'Downloads a specific attachment file from a Jira issue. Use get_attachments first to obtain the attachment ID. By default returns the file as base64-encoded content. If outputPath is provided, streams the file directly to disk (recommended for large files) and returns a success confirmation instead.'
     ),
     schema: downloadAttachmentSchema as unknown as z.ZodObject<z.ZodRawShape>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,6 +38,18 @@ export function downloadAttachmentTool(
         size: number;
         content: string;
       }>(`${client.apiBasePath}/attachment/${input.attachmentId}`);
+
+      // If an output path is provided, stream directly to disk.
+      if (input.outputPath) {
+        await client.downloadAttachmentToFile(
+          metadata.content,
+          input.outputPath
+        );
+        return {
+          success: true,
+          savedTo: input.outputPath,
+        };
+      }
 
       // Download the binary content.
       const { base64, mimeType } = await client.getAttachmentBuffer(

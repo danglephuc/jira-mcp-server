@@ -22,6 +22,9 @@ describe('downloadAttachmentTool', () => {
     getAttachmentBuffer: vi
       .fn<() => Promise<unknown>>()
       .mockResolvedValue(mockBufferResult),
+    downloadAttachmentToFile: vi
+      .fn<() => Promise<void>>()
+      .mockResolvedValue(undefined),
     apiBasePath: '/rest/api/2',
   } as unknown as JiraClient;
 
@@ -35,6 +38,9 @@ describe('downloadAttachmentTool', () => {
     (
       mockClient.getAttachmentBuffer as ReturnType<typeof vi.fn>
     ).mockResolvedValue(mockBufferResult);
+    (
+      mockClient.downloadAttachmentToFile as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(undefined);
   });
 
   it('has the correct tool name and description', () => {
@@ -95,5 +101,37 @@ describe('downloadAttachmentTool', () => {
     expect(mockClient.getAttachmentBuffer).toHaveBeenCalledWith(
       'https://custom.jira.com/attachments/12345'
     );
+  });
+
+  it('streams to disk and returns success when outputPath is provided', async () => {
+    const result = await tool.handler({
+      attachmentId: '10010',
+      outputPath: '/tmp/downloads/screenshot.png',
+    });
+
+    expect(mockClient.get).toHaveBeenCalledWith('/rest/api/2/attachment/10010');
+    expect(mockClient.downloadAttachmentToFile).toHaveBeenCalledWith(
+      mockMetadata.content,
+      '/tmp/downloads/screenshot.png'
+    );
+    expect(mockClient.getAttachmentBuffer).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      success: true,
+      savedTo: '/tmp/downloads/screenshot.png',
+    });
+  });
+
+  it('falls back to base64 when outputPath is not provided', async () => {
+    const result = await tool.handler({ attachmentId: '10010' });
+
+    expect(mockClient.downloadAttachmentToFile).not.toHaveBeenCalled();
+    expect(mockClient.getAttachmentBuffer).toHaveBeenCalled();
+    expect(result).toEqual({
+      id: '10010',
+      filename: 'screenshot.png',
+      mimeType: 'image/png',
+      size: 102400,
+      base64Content: 'iVBORw0KGgo=',
+    });
   });
 });
