@@ -15,12 +15,12 @@ A **read-only** [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 
 ### Toolset: `issue`
 
-| Tool                  | Description                                   | Jira Endpoint                              |
-| --------------------- | --------------------------------------------- | ------------------------------------------ |
-| `get_issues`          | Search issues with JQL filters                | `GET /rest/api/3/search`                   |
-| `get_issue`           | Get a single issue with full details          | `GET /rest/api/3/issue/:issueKey`          |
-| `get_attachments`     | List attachments for an issue                 | `GET /rest/api/3/issue/:issueKey`          |
-| `download_attachment` | Download an attachment file as base64 content | `GET /rest/api/3/attachment/:id` + content |
+| Tool                  | Description                                     | Jira Endpoint                              |
+| --------------------- | ----------------------------------------------- | ------------------------------------------ |
+| `get_issues`          | Search issues with JQL filters                  | `GET /rest/api/3/search`                   |
+| `get_issue`           | Get a single issue with full details            | `GET /rest/api/3/issue/:issueKey`          |
+| `get_attachments`     | List attachments for an issue                   | `GET /rest/api/3/issue/:issueKey`          |
+| `download_attachment` | Download attachment as base64 or stream to disk | `GET /rest/api/3/attachment/:id` + content |
 
 ### Toolset: `issue_metadata`
 
