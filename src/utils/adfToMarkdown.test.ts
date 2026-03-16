@@ -666,4 +666,40 @@ describe('adfToMarkdown', () => {
 
     expect(adfToMarkdown(adf)).toBe(expected);
   });
+
+  // -------------------------------------------------------------------------
+  // Media (attachments / images)
+  // -------------------------------------------------------------------------
+
+  it('includes media id and collection in the placeholder when available', () => {
+    const adf = {
+      type: 'doc',
+      version: 1,
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'mediaSingle',
+              content: [
+                {
+                  type: 'media',
+                  attrs: {
+                    type: 'file',
+                    id: 'media-id-123',
+                    collection: 'media-collection-456',
+                    alt: 'Screenshot',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(adfToMarkdown(adf)).toBe(
+      '[Screenshot id=media-id-123 collection=media-collection-456]'
+    );
+  });
 });

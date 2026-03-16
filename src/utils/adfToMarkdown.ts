@@ -170,10 +170,17 @@ function convertNode(node: AdfNode): string {
       return convertChildren(node);
 
     case 'media': {
-      const alt =
-        (node.attrs?.alt as string) ??
-        (node.attrs?.id as string) ??
-        'attachment';
+      const attrs = node.attrs ?? {};
+      const id = attrs.id as string | undefined;
+      const collection = attrs.collection as string | undefined;
+      const alt = (attrs.alt as string) ?? id ?? 'attachment';
+
+      if (id && collection) {
+        return `[${alt} id=${id} collection=${collection}]`;
+      }
+      if (id) {
+        return `[${alt} id=${id}]`;
+      }
       return `[${alt}]`;
     }
 
