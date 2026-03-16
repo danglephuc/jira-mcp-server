@@ -18,6 +18,7 @@ export interface MappedUser {
 }
 
 export interface MappedComment {
+  id: string;
   author: MappedUser | null;
   body: string;
   created: string;
@@ -232,6 +233,10 @@ export function mapIssue(raw: unknown, apiVersion: string): MappedIssue {
             : undefined;
 
         const mappedComment: MappedComment = {
+          id:
+            typeof comment.id === 'string'
+              ? comment.id
+              : String(comment.id ?? ''),
           author: mapUser(comment.author),
           body: mapCommentBody(comment.body, apiVersion),
           created,

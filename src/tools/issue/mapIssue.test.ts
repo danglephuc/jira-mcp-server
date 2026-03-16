@@ -247,6 +247,7 @@ describe('mapIssue', () => {
     const result = mapIssue(rawIssueV3, '3');
 
     expect(result.comment).toHaveLength(1);
+    expect(result.comment![0].id).toBe('20001');
     expect(result.comment![0].author).toEqual({
       displayName: 'Alice',
       emailAddress: 'alice@example.com',

@@ -30,6 +30,32 @@ const mockIssue = {
     components: [],
     fixVersions: [],
     subtasks: [],
+    comment: {
+      comments: [
+        {
+          id: '20001',
+          author: {
+            displayName: 'Alice',
+            emailAddress: 'alice@example.com',
+          },
+          body: {
+            type: 'doc',
+            version: 1,
+            content: [
+              {
+                type: 'paragraph',
+                content: [{ type: 'text', text: 'Sample issue comment' }],
+              },
+            ],
+          },
+          created: '2025-01-01T12:00:00.000+0000',
+          updated: '2025-01-01T12:00:00.000+0000',
+        },
+      ],
+      maxResults: 1,
+      total: 1,
+      startAt: 0,
+    },
   },
 };
 
@@ -58,11 +84,14 @@ describe('getIssueTool', () => {
       string,
       unknown
     >;
+    const comments = result.comment as Array<{ id: string }>;
 
     expect(result.key).toBe('PROJ-1');
     expect(result.summary).toBe('Sample issue subject');
     expect(result.status).toBe('Open');
     expect(result.description).toBe('Sample issue description');
+    expect(comments).toHaveLength(1);
+    expect(comments[0].id).toBe('20001');
     // Noise fields must not be present.
     expect('self' in result).toBe(false);
     expect('expand' in result).toBe(false);
